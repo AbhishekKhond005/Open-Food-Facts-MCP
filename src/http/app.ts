@@ -1,20 +1,26 @@
 /**
  * HTTP Application layer.
  * Single MCP endpoint with origin validation, body-size limits, and health check.
- * Per contract: POST /mcp for JSON-RPC, GET /mcp -> 405, GET /health -> 200.
+ * Per contract: POST /mcp for JSON-RPC, GET /mcp -> SSE or 405, GET /health -> 200.
+ *
+ * Each session gets its own McpServer + StreamableHTTPServerTransport pair
+ * because the SDK binds one server to one transport.
  */
 
 import express, { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { logger } from "../logging.js";
 import type { Config } from "../config.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+/** Factory that creates a fresh McpServer (with all tools registered) */
+export type McpServerFactory = () => McpServer;
 
 /**
  * Create the Express application with MCP endpoint.
  */
-export function createApp(config: Config, mcpServer: McpServer): express.Express {
+export function createApp(config: Config, mcpServerFactory: McpServerFactory): express.Express {
   const app = express();
 
   // Trust proxy for correct IP detection behind reverse proxies
@@ -88,7 +94,8 @@ export function createApp(config: Config, mcpServer: McpServer): express.Express
 
   // ---- MCP Endpoint ----
 
-  // Store transports for session management
+  // Store transports for session management.
+  // Each session has its own McpServer + Transport pair.
   const transports = new Map<string, StreamableHTTPServerTransport>();
 
   // POST /mcp - Main MCP endpoint for JSON-RPC messages
@@ -104,7 +111,7 @@ export function createApp(config: Config, mcpServer: McpServer): express.Express
         // Reuse existing transport for this session
         transport = transports.get(sessionId)!;
       } else if (!sessionId) {
-        // New session: create a new transport
+        // New session: create a new transport AND a new McpServer
         transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (newSessionId) => {
@@ -125,8 +132,9 @@ export function createApp(config: Config, mcpServer: McpServer): express.Express
           }
         };
 
-        // Connect the MCP server to this transport
-        await mcpServer.connect(transport);
+        // Create a fresh MCP server for this session and connect it
+        const sessionServer = mcpServerFactory();
+        await sessionServer.connect(transport);
       } else {
         // Session ID provided but not found -> 404 so client re-initializes (R15)
         logger.warn("Unknown session ID", { correlationId, sessionId });
@@ -162,13 +170,12 @@ export function createApp(config: Config, mcpServer: McpServer): express.Express
     }
   });
 
-  // GET /mcp - Return 405 (no server-initiated SSE stream offered) per R9
+  // GET /mcp - SSE stream for existing sessions, or 405
   app.get(config.endpointPath, async (req: Request, res: Response) => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
-    
+
     if (sessionId && transports.has(sessionId)) {
       const transport = transports.get(sessionId)!;
-      // Allow GET for SSE stream if the transport supports it
       await transport.handleRequest(req, res);
     } else {
       res.status(405).json({ error: "Method Not Allowed. Use POST for MCP requests." });

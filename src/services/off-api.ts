@@ -172,7 +172,9 @@ export async function searchProducts(
   page: number = 1,
   pageSize: number = 10
 ): Promise<SearchResult> {
-  const url = `${apiConfig.baseUrl}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page=${page}&page_size=${pageSize}&fields=${PRODUCT_FIELDS}`;
+  // Use v2 search with minimal fields for reliability
+  const searchFields = "code,product_name,brands,quantity,categories,nutrition_grades,nova_group,image_front_url,ingredients_text,allergens,traces,nutriments,labels,ecoscore_grade";
+  const url = `${apiConfig.baseUrl}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page=${page}&page_size=${pageSize}&fields=${searchFields}`;
   const start = Date.now();
 
   logger.info("OFF API: searching products", { query, page, pageSize });

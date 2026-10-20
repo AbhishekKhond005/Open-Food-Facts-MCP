@@ -30,11 +30,13 @@ async function main(): Promise<void> {
   });
   logger.info("Open Food Facts API client initialized");
 
-  // 3. Create the MCP server with all tools
-  const mcpServer = createMcpServer();
+  // 3. Validate tool registry once at startup (fail fast)
+  //    Each session will get its own McpServer instance via the factory.
+  const testServer = createMcpServer();
+  logger.info("Initial MCP server created and validated (startup check)");
 
-  // 4. Create the HTTP app
-  const app = createApp(config, mcpServer);
+  // 4. Create the HTTP app with a factory that creates fresh servers per session
+  const app = createApp(config, createMcpServer);
 
   // 5. Start listening
   const server = app.listen(config.port, config.host, () => {
