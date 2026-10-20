@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "open-food-facts": {
+      "url": "http://localhost:8081/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}
