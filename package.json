@@ -1,0 +1,34 @@
+{
+  "name": "open-food-facts-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke": "bash scripts/smoke.sh",
+    "dump-tools": "bash scripts/dump-tools.sh"
+  },
+  "keywords": ["mcp", "open-food-facts", "alexa", "food", "nutrition"],
+  "author": "Abhishek Khond",
+  "license": "MIT",
+  "description": "MCP server for Open Food Facts — food product lookup, nutrition analysis, allergen detection, dietary checks, product comparison, and healthier alternatives. Built for the Amazon AppDev 2026 Hackathon (Alexa+ track).",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.7"
+  }
+}
