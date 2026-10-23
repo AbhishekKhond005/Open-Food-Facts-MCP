@@ -8,7 +8,7 @@ Instructions on how to run the application for demonstration purposes.
 
 | Component | Directory | Port / URL | Purpose |
 |---|---|---|---|
-| **MCP Server** | `./` (Root) | `http://localhost:8081/mcp` | Open Food Facts MCP Server (Streamable HTTP, protocol `2025-11-25`) |
+| **MCP Server** | `./` (Project root) | `http://localhost:8081/mcp` | Open Food Facts MCP Server (Streamable HTTP, protocol `2025-11-25`) |
 | **Simulator Backend** | `homepulse/simulator-backend` | `http://localhost:3000` | Express REST API (`/api/v1/chat`, `/api/v1/status`) + MCP Client |
 | **Web UI** | `homepulse/client` | `http://localhost:5173` | React + Vite UI with chat, confirmation cards, and action traces |
 
@@ -22,6 +22,7 @@ Browser UI (5173) ──HTTP REST──> Simulator Backend (3000) ──MCP Prot
 
 - **Node.js**: v18.0.0 or higher (`node -v`)
 - **npm**: v9.0.0 or higher (`npm -v`)
+- Git (`git --version`)
 
 ---
 
@@ -31,20 +32,24 @@ Follow these steps to run all three services using 3 separate terminals.
 
 ### Step 1: Start the MCP Server (Terminal 1)
 
-1. Open a terminal in the repository root:
+1. Open a terminal in the root directory of the cloned repository:
    ```bash
-   cd /home/deku/Desktop/Open-Food-Facts-MCP
+   cd Open-Food-Facts-MCP
    ```
-2. Install dependencies (if not already installed):
+2. Set up environment variables (if `.env` does not already exist):
+   ```bash
+   cp .env.example .env
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the server:
+4. Start the server:
    ```bash
    npm run dev
-   # Or: npm start
+   # Or for production: npm start
    ```
-4. **Verify it is running**:
+5. **Verify it is running**:
    ```bash
    curl http://localhost:8081/health
    # Expected output: {"status":"healthy","service":"open-food-facts-mcp"}
@@ -56,24 +61,28 @@ Follow these steps to run all three services using 3 separate terminals.
 
 1. Open a second terminal and navigate to the simulator backend directory:
    ```bash
-   cd /home/deku/Desktop/Open-Food-Facts-MCP/homepulse/simulator-backend
+   cd homepulse/simulator-backend
    ```
-2. Install dependencies:
+2. Set up environment variables (if `.env` does not already exist):
    ```bash
-   npm install
+   cp .env.example .env
    ```
-3. Verify environment configuration in `.env` (already pre-configured):
+   *Default `.env` configuration:*
    ```env
    PORT=3000
    WEB_ORIGIN=http://localhost:5173
    MCP_SERVER_URL=http://localhost:8081/mcp
    MCP_PROTOCOL_VERSION=2025-11-25
    ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
 4. Start the backend:
    ```bash
    npm run dev
    ```
-5. **Verify connection to MCP server**:
+5. **Verify connection to the MCP server**:
    ```bash
    curl http://localhost:3000/api/v1/status
    # Expected output: {"connected":true,"toolsCount":...}
@@ -85,15 +94,19 @@ Follow these steps to run all three services using 3 separate terminals.
 
 1. Open a third terminal and navigate to the frontend directory:
    ```bash
-   cd /home/deku/Desktop/Open-Food-Facts-MCP/homepulse/client
+   cd homepulse/client
    ```
-2. Install dependencies:
+2. Set up environment variables (if `.env` does not already exist):
    ```bash
-   npm install
+   cp .env.example .env
    ```
-3. Verify environment configuration in `.env` (already pre-configured):
+   *Default `.env` configuration:*
    ```env
    VITE_SIMULATOR_API_URL=http://localhost:3000
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
    ```
 4. Start the Vite development server:
    ```bash
@@ -108,12 +121,16 @@ Follow these steps to run all three services using 3 separate terminals.
 
 ## Alternative: One-Command Quick Launch
 
-You can run all three services concurrently in the background from a single terminal:
+From the project root directory, you can run all three services concurrently in the background:
 
 ```bash
-# In the project root:
+# Start MCP server in background
 npm run dev &
+
+# Start simulator backend in background
 (cd homepulse/simulator-backend && npm run dev) &
+
+# Start frontend UI in foreground
 (cd homepulse/client && npm run dev)
 ```
 
@@ -143,11 +160,11 @@ kill $(jobs -p)
 ## Troubleshooting
 
 - **"MCP Server Disconnected" warning**:
-  Check that the MCP server is running on `http://localhost:8081/mcp`. Run `curl http://localhost:8081/health`.
+  Check that the MCP server is running on `http://localhost:8081/mcp`. Verify with `curl http://localhost:8081/health`.
 - **CORS Error in Browser**:
   Ensure `WEB_ORIGIN=http://localhost:5173` is set in `homepulse/simulator-backend/.env`.
 - **Port Conflict (`EADDRINUSE`)**:
-  Free the port using:
-  - Port 8081: `fuser -k 8081/tcp`
-  - Port 3000: `fuser -k 3000/tcp`
-  - Port 5173: `fuser -k 5173/tcp`
+  If port 8081, 3000, or 5173 is already in use, terminate the process running on that port:
+  - Using npx: `npx kill-port 8081 3000 5173`
+  - Linux/macOS: `lsof -ti :8081,:3000,:5173 | xargs kill -9`
+  - Windows PowerShell: `Get-Process -Id (Get-NetTCPConnection -LocalPort 8081,3000,5173).OwningProcess | Stop-Process -Force`
