@@ -12,7 +12,15 @@ The browser calls only the simulator API. The simulator discovers tools from the
 
 ## Run the full application
 
-Run each component in a separate terminal, starting from the repository root.
+From the repository root, run all three services together with:
+
+```bash
+./run.sh
+```
+
+The script installs dependencies when needed, checks service health, and prints the frontend URL. Press Ctrl+C to stop services it started. By default it uses ports `8081` (MCP), `3001` (simulator backend), and `5173` (frontend); override these with `MCP_SERVER_PORT`, `SIMULATOR_PORT`, and `VITE_PORT`.
+
+To start each service manually, use separate terminals:
 
 ### 1. MCP server
 

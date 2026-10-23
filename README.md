@@ -83,7 +83,15 @@ The server will start at:
 
 ## 🖥️ Run the Alexa+ Simulator
 
-The `homepulse/` directory contains the browser frontend and simulator backend. To run the full demo, start all three services in separate terminals:
+From the repository root, run the full application with one command:
+
+```bash
+./run.sh
+```
+
+The script installs dependencies when needed, starts the MCP server, simulator backend, and browser frontend, waits for them to become healthy, and stops services it started when you press Ctrl+C. Open `http://localhost:5173`.
+
+The `homepulse/` directory contains the browser frontend and simulator backend. To run the services manually in separate terminals:
 
 1. Start the MCP server using the commands above.
 2. Start the simulator backend:
