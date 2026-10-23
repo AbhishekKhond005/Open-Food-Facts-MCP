@@ -81,6 +81,30 @@ The server will start at:
 - **MCP endpoint:** `http://localhost:8081/mcp`
 - **Health check:** `http://localhost:8081/health`
 
+## 🖥️ Run the Alexa+ Simulator
+
+The `homepulse/` directory contains the browser frontend and simulator backend. To run the full demo, start all three services in separate terminals:
+
+1. Start the MCP server using the commands above.
+2. Start the simulator backend:
+
+   ```bash
+   cd homepulse/simulator-backend
+   cp .env.example .env
+   npm install
+   npm run dev
+   ```
+
+3. Start the browser frontend:
+
+   ```bash
+   cd homepulse/client
+   npm install
+   npm run dev
+   ```
+
+Open `http://localhost:5173`. The simulator backend connects to `http://localhost:8081/mcp` by default. See [`homepulse/README.md`](homepulse/README.md) for details.
+
 ### Development Mode (auto-reload)
 
 ```bash
