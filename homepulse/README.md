@@ -59,7 +59,7 @@ Approve or reject a pending side-effecting tool call.
 ### `GET /api/v1/status`
 Check real-time MCP connection and discovered tool count.
 
-See the [implementation plan](../AlexaPlus_Simulator_MCP_Integrated_Implementation_Plan.md) for full request/response shapes.
+See the [demonstration guide](../AlexaPlus_Simulator_MCP_Demo.md) for full request/response shapes.
 
 ---
 

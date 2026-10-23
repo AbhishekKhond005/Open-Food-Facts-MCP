@@ -1,15 +1,182 @@
-# HomePulse: Web-Based Alexa+ Simulation — Integrated Implementation Plan
+# HomePulse: Web-Based Alexa+ Simulation — Demonstration Guide
 
 **Version:** 2.0  
-**Date:** 2026-10-20  
-**Team size:** 2  
-**Purpose:** Updated plan that aligns the HomePulse web simulator with `alexa_plus_simulator_mcp_contract.md`.
+**Date:** 2026-10-23  
+**Status:** Demo Ready  
+**Purpose:** Comprehensive guide, run instructions, and walkthrough for demonstrating the HomePulse web simulator with live Model Context Protocol (MCP) server integration.
 
-> **Implementation rule:** The browser talks only to the simulation backend. The simulation backend acts as an MCP client. The teammate's MCP server owns the real tools and domain operations. The simulator discovers tools at runtime and must not keep its own hard-coded copy of the MCP tool catalogue.
+> **Demonstration Rule:** The browser talks only to the simulation backend (`:3000`). The simulation backend acts as an MCP client. The MCP server (`:8081/mcp`) owns the real domain operations and tools. The simulator discovers tools dynamically via standard MCP `tools/list` at runtime.
 
 ---
 
-## 1. Project goal and scope
+## 1. How to Run the Application for Demonstration
+
+Follow these instructions to run all three tiers of the application locally for a live demonstration or video recording.
+
+### Architecture & Port Mapping
+
+| Tier | Component | Directory | Port / URL | Description |
+|---|---|---|---|---|
+| **Tier 1: MCP Server** | Open Food Facts MCP Server | Root (`./`) | `http://localhost:8081/mcp` | Standard Streamable HTTP MCP server (protocol `2025-11-25`) |
+| **Tier 2: Simulator Backend** | HomePulse Simulator Server | `homepulse/simulator-backend` | `http://localhost:3000` | Express REST API (`/api/v1/chat`, `/api/v1/status`) + MCP client |
+| **Tier 3: Web UI** | HomePulse Browser Client | `homepulse/client` | `http://localhost:5173` | React + Vite conversational interface with traces and confirmations |
+
+```text
+┌────────────────────────┐      HTTP REST      ┌────────────────────────┐    Streamable HTTP    ┌────────────────────────┐
+│     HomePulse UI       │ ──────────────────> │   Simulator Backend    │ ────────────────────> │       MCP Server       │
+│ http://localhost:5173  │ <────────────────── │  http://localhost:3000 │ <──────────────────── │ http://localhost:8081  │
+└────────────────────────┘                     └────────────────────────┘        MCP JSON-RPC   └────────────────────────┘
+```
+
+---
+
+### Prerequisites
+- **Node.js**: v18.0.0 or higher (`node -v`)
+- **npm**: v9.0.0 or higher (`npm -v`)
+- 3 terminal windows (or split terminal panes)
+
+---
+
+### Step-by-Step Launch Instructions
+
+#### Step 1: Start the MCP Server (Terminal 1)
+1. Open a terminal in the project root:
+   ```bash
+   cd /home/deku/Desktop/Open-Food-Facts-MCP
+   ```
+2. Install dependencies (first time only):
+   ```bash
+   npm install
+   ```
+3. Start the MCP server:
+   ```bash
+   npm run dev
+   # Or production mode: npm start
+   ```
+4. **Verification:** Check health endpoint:
+   ```bash
+   curl http://localhost:8081/health
+   # Returns: {"status":"healthy","service":"open-food-facts-mcp"}
+   ```
+
+#### Step 2: Start the Simulator Backend (Terminal 2)
+1. In a second terminal, enter the simulator backend directory:
+   ```bash
+   cd /home/deku/Desktop/Open-Food-Facts-MCP/homepulse/simulator-backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Verify or adjust `.env` configuration (pre-configured):
+   ```env
+   PORT=3000
+   WEB_ORIGIN=http://localhost:5173
+   MCP_SERVER_URL=http://localhost:8081/mcp
+   MCP_PROTOCOL_VERSION=2025-11-25
+   ```
+4. Start the backend:
+   ```bash
+   npm run dev
+   # Or: npm start
+   ```
+5. **Verification:** Test the backend status endpoint:
+   ```bash
+   curl http://localhost:3000/api/v1/status
+   ```
+   You should see `"connected": true` and `"toolsCount": <number>` with the live tools discovered from the MCP server.
+
+#### Step 3: Start the Web UI (Terminal 3)
+1. In a third terminal, enter the client directory:
+   ```bash
+   cd /home/deku/Desktop/Open-Food-Facts-MCP/homepulse/client
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Verify or adjust `.env` configuration (pre-configured):
+   ```env
+   VITE_SIMULATOR_API_URL=http://localhost:3000
+   ```
+4. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+5. Open your browser at:
+   ```text
+   http://localhost:5173
+   ```
+
+---
+
+### One-Command Quick Launch (Alternative)
+To launch all services concurrently from the root directory:
+```bash
+# Terminal 1: Start MCP server in background
+npm run dev &
+
+# Terminal 2: Start simulator backend in background
+(cd homepulse/simulator-backend && npm run dev) &
+
+# Terminal 3: Start frontend UI in foreground
+(cd homepulse/client && npm run dev)
+```
+*(To stop all background processes later: `kill $(jobs -p)` or terminate the respective ports.)*
+
+---
+
+### Live Demonstration Script & Walkthrough (3-Minute Tour)
+
+Follow this structured flow for demo presentations, stakeholder reviews, or video recordings:
+
+#### Phase 1: Architectural Foundation & Connection Status (0:00 – 0:45)
+1. **Show the Web Interface:** Open `http://localhost:5173`. Point out the modern Alexa+-inspired dark mode interface.
+2. **Highlight the Connection Badge:** In the upper right corner, show the **Connected to MCP** status badge.
+   - Explain that the UI never connects directly to MCP; it speaks to the secure Simulator Backend.
+   - The backend performs runtime protocol handshake (`2025-11-25`) and dynamically lists tools via `tools/list`.
+
+#### Phase 2: Natural Language Queries & Live Tool Execution (0:45 – 1:30)
+1. **Send a Query:** Click one of the **Suggested Prompts** or type a query into the composer.
+2. **Inspect the Action Trace:** Click to expand the **Action Trace Panel**:
+   - Point out the exact tool called by the backend.
+   - Show input arguments extracted dynamically from the user's message.
+   - Highlight execution time and raw JSON response returned by the MCP server.
+   - Emphasize that the assistant response is grounded in actual tool data, not LLM hallucination.
+
+#### Phase 3: Safety & Human-in-the-Loop Confirmation (1:30 – 2:15)
+1. **Trigger a Modifying Action:** Submit an action with side effects (e.g. creating or completing a task/chore).
+2. **Show the Pending Confirmation Card:**
+   - Point out that the tool **has NOT yet been executed** on the server.
+   - Show status in Action Trace: `awaiting_confirmation`.
+3. **Approve the Action:** Click **Confirm**:
+   - The simulator backend calls `POST /api/v1/chat/confirm`, triggering the MCP `tools/call`.
+   - The Action Trace updates to `completed` with the returned stable ID.
+
+#### Phase 4: Resilience & Honest Error Handling (2:15 – 3:00)
+1. **Test Unsupported / Edge Cases:** Ask an unsupported question.
+2. **Show Transparent Fallback:** The assistant politely explains what tools are currently discovered from the MCP server rather than making up answers.
+3. **Closing Value:** Highlight that HomePulse bridges modern conversational AI with robust, standardized enterprise tools via the Model Context Protocol.
+
+---
+
+### Troubleshooting Common Demo Issues
+
+- **Badge Shows "MCP Server Disconnected":**
+  1. Confirm the MCP server in Terminal 1 is running: `curl http://localhost:8081/health`.
+  2. If the MCP server is on a different port, update `MCP_SERVER_URL` in `homepulse/simulator-backend/.env` and restart the backend.
+- **Frontend Fails to Connect to Simulator:**
+  1. Ensure the simulator backend is running on port 3000: `curl http://localhost:3000/api/v1/status`.
+  2. Verify `VITE_SIMULATOR_API_URL=http://localhost:3000` in `homepulse/client/.env`.
+- **Port Conflicts (`EADDRINUSE`):**
+  - Port 8081: `fuser -k 8081/tcp` or `lsof -i :8081`
+  - Port 3000: `fuser -k 3000/tcp` or `lsof -i :3000`
+  - Port 5173: `fuser -k 5173/tcp` or `lsof -i :5173`
+
+---
+
+
+## 2. Project Goal and Scope
 
 Build **HomePulse**, a browser-based Alexa+-style conversational household assistant. The user can ask about chores and saved notes, add a chore, and complete a chore through follow-up conversation.
 
@@ -25,7 +192,7 @@ The project simulates the Alexa+-style interaction; it does **not** connect to a
 
 Keep the first version small and reliable. Voice input, multi-agent architecture, smart-home hardware, and advanced integrations are optional and should not delay the three end-to-end workflows.
 
-## 2. The updated architecture
+## 3. The Updated Architecture
 
 The original plan's generic “conversation engine → action/tool layer → database” now needs a precise boundary: the action/tool layer is the teammate's independent MCP server, and the simulator calls it through the standard MCP protocol.
 
@@ -78,7 +245,7 @@ The original plan's generic “conversation engine → action/tool layer → dat
 
 The MCP server must not depend on the web UI, the simulator's REST routes, its LLM, or its conversation history. The simulator must not bypass MCP by calling the teammate's database or business functions directly.
 
-## 3. Decisions to lock together before coding
+## 4. Decisions to Lock Together Before Coding
 
 Have a short kickoff and agree to these items in writing:
 
@@ -94,7 +261,7 @@ Have a short kickoff and agree to these items in writing:
 
 Do not wait for the full server to be complete before starting the UI. Freeze the interfaces first, then develop each component independently.
 
-## 4. Your work: web UI and simulation backend
+## 5. Web UI and Simulation Backend Specifications
 
 You own **both** the browser UI and the backend that sits between the UI and the MCP server. This middle backend is essential; do not put MCP connection logic or secrets in browser code.
 
@@ -172,7 +339,7 @@ For every chat turn, the simulation backend should:
 
 The MCP server does not need to parse the user's original natural-language message. It only receives structured tool calls.
 
-## 5. MCP client implementation requirements
+## 6. MCP Client Implementation Requirements
 
 Use the MCP SDK where practical rather than implementing an incompatible protocol manually.
 
@@ -210,7 +377,7 @@ Use `tools/call` with the exact discovered tool name and arguments that conform 
 - Bound a turn to a configurable maximum of 8 tool calls.
 - Use a request timeout of about 20 seconds initially.
 
-## 6. Proposed HomePulse tool catalogue
+## 7. Proposed HomePulse Tool Catalogue
 
 The integration contract says the final domain/tool names are to be agreed separately. Use this section as the **proposal to review with your teammate**, not as an already-finalized server contract.
 
@@ -254,7 +421,7 @@ The exact structure should be agreed before implementation, but predictable task
 
 For success, MCP tool results should include a useful text block in `content`; where appropriate, also return machine-readable `structuredContent`. For a business/tool error, return a valid tool result with `isError: true` and a safe explanation. Reserve JSON-RPC errors for protocol-level issues such as an invalid request or unknown method.
 
-## 7. Contract between the frontend and simulation backend
+## 8. Contract Between Frontend and Simulation Backend
 
 This is an application-level API separate from MCP. Keep it stable so the frontend and simulator backend can be developed in parallel.
 
@@ -372,7 +539,7 @@ Useful for development and the demo UI:
 
 This endpoint is optional and must report actual connection status, not a fixed mock status.
 
-## 8. Error handling and safe retries
+## 9. Error Handling and Safe Retries
 
 Distinguish an MCP transport/protocol failure from a valid tool result that reports a business error.
 
@@ -392,7 +559,7 @@ Distinguish an MCP transport/protocol failure from a valid tool result that repo
 
 Use safe server-side logging for timestamps, request/correlation IDs, MCP method, tool name, duration, and outcome. Redact sensitive values. The UI trace should show a concise summary rather than dumping raw arguments or personal data.
 
-## 9. Environment configuration and local run setup
+## 10. Environment Configuration and Local Run Setup
 
 Suggested local ports:
 
@@ -446,7 +613,7 @@ MCP_SERVER_URL=http://mcp-server:8081/mcp
 
 Use the actual Compose service name. For a remote MCP endpoint, use HTTPS.
 
-## 10. Repository and parallel-development workflow
+## 11. Repository and Development Workflow
 
 Recommended monorepo layout:
 
@@ -485,7 +652,7 @@ If you and your teammate use separate repositories, keep the same folder respons
 3. Test the chat API and confirmation flow from the UI.
 4. Keep contract changes explicit in a shared commit or message; do not silently change response fields or tool schema.
 
-## 11. Integration milestones and acceptance tests
+## 12. Integration Milestones and Acceptance Tests
 
 ### Milestone A — Contract locked
 
@@ -536,7 +703,7 @@ If you and your teammate use separate repositories, keep the same folder respons
 - [ ] Demo video shows actual tool calls/results, not mocked success.
 - [ ] Submission language accurately describes a web-based simulation and its MCP integration.
 
-## 12. Recommended demo sequence
+## 13. Recommended Demo Sequence
 
 Aim for a repeatable two-to-three-minute walkthrough.
 
@@ -550,7 +717,7 @@ Aim for a repeatable two-to-three-minute walkthrough.
 
 Always distinguish the simulated Alexa+-style UI from the actual MCP protocol and server operations.
 
-## 13. Time-boxed build plan
+## 14. Time-Boxed Build Plan
 
 Use these as work phases and adjust the calendar to the confirmed hackathon deadline.
 
@@ -603,7 +770,7 @@ Use these as work phases and adjust the calendar to the confirmed hackathon dead
 
 **Exit condition:** A clean checkout can run using the README and complete the demo script.
 
-## 14. Important implementation rules
+## 15. Important Implementation & Demonstration Rules
 
 1. **Standard MCP is the simulator-to-server boundary.** Do not replace it with a custom REST tool API.
 2. **The browser never talks directly to MCP.** All MCP sessions and server-only configuration stay in the simulation backend.
@@ -616,7 +783,7 @@ Use these as work phases and adjust the calendar to the confirmed hackathon dead
 9. **Use stable IDs.** Follow-up operations must refer to the exact record returned by a prior tool.
 10. **Protect secrets and personal data.** Redact logs, avoid committing credentials, and minimize what is stored.
 
-## 15. Source contract and references
+## 16. Source Contract and References
 
 This plan aligns to the team's `alexa_plus_simulator_mcp_contract.md`, which specifies:
 - MCP `2025-11-25` over Streamable HTTP;
