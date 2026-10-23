@@ -70,7 +70,7 @@ export function useChat() {
       replaceLastAssistantMessage({
         id:        placeholderId,
         role:      'assistant',
-        content:   `⚠️ Could not reach the simulator backend. Is it running on port 3000?`,
+        content:   '⚠️ Could not reach the simulator backend. Start it with `cd homepulse/simulator-backend && npm run dev`, then retry.',
         timestamp: new Date(),
         status:    'failed',
         toolCalls: [],

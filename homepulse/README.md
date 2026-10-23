@@ -5,7 +5,7 @@ FoodPulse is a browser chat interface and backend that demonstrate the Open Food
 ## Architecture
 
 ```text
-Browser (React/Vite :5173) → Simulator backend (Express :3000) → MCP server (:8081/mcp)
+Browser (React/Vite :5173) → Simulator backend (Express :3001) → MCP server (:8081/mcp)
 ```
 
 The browser calls only the simulator API. The simulator discovers tools from the MCP server and calls them over Streamable HTTP.
@@ -33,7 +33,7 @@ npm install
 npm run dev
 ```
 
-The simulator API is at `http://localhost:3000`; its health endpoint is `/health` and MCP status is `/api/v1/status`.
+The simulator API is at `http://localhost:3001`; its health endpoint is `/health` and MCP status is `/api/v1/status`.
 
 ### 3. Browser client
 

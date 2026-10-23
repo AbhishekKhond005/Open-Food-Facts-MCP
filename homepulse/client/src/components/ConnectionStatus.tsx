@@ -40,6 +40,8 @@ export function ConnectionStatus({ onRefresh }: ConnectionStatusProps) {
 
   const label = checking
     ? 'Checking…'
+    : status?.simulator === 'error'
+    ? 'Simulator backend unavailable'
     : status?.mcpServer === 'connected'
     ? `MCP connected · ${status.discoveredToolCount} tool${status.discoveredToolCount !== 1 ? 's' : ''}`
     : 'MCP unavailable'

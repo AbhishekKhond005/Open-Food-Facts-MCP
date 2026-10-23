@@ -6,8 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Optional: proxy API requests to the backend in dev, so you don't need CORS headers
-      // '/api': 'http://localhost:3000',
+      '/api': {
+        target: process.env.SIMULATOR_BACKEND_URL ?? 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
 })

@@ -5,7 +5,7 @@
 
 import type { ChatRequest, ChatResponse, ConfirmRequest, StatusResponse } from '../types/api'
 
-const BASE = import.meta.env.VITE_SIMULATOR_API_URL ?? 'http://localhost:3000'
+const BASE = import.meta.env.VITE_SIMULATOR_API_URL ?? ''
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {

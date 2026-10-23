@@ -9,7 +9,7 @@ const chatRoute         = require('./routes/chat');
 const confirmationRoute = require('./routes/confirmation');
 const statusRoute       = require('./routes/status');
 
-const PORT       = process.env.PORT       || 3000;
+const PORT       = process.env.PORT       || 3001;
 const WEB_ORIGIN = process.env.WEB_ORIGIN || 'http://localhost:5173';
 
 const app = express();
