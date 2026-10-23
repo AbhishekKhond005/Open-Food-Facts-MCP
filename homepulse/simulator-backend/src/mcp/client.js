@@ -86,6 +86,9 @@ async function postMcp(body, { skipSessionHeader = false } = {}) {
     throw new McpTransportError(`MCP HTTP ${response.status}: ${text}`);
   }
 
+  // MCP notifications commonly return 202 Accepted with no response body.
+  if (response.status === 202 || response.status === 204) return null;
+
   // The response may be JSON or SSE (text/event-stream).
   // For Streamable HTTP, a single RPC usually comes back as JSON.
   const contentType = response.headers.get('content-type') || '';
