@@ -1,7 +1,7 @@
 /**
  * Shared TypeScript types for the HomePulse frontend ↔ simulator API contract.
  *
- * Keep these in sync with the spec in Section 7 of the implementation plan.
+ * Keep these in sync with the spec in Section 8 of the demonstration guide (AlexaPlus_Simulator_MCP_Demo.md).
  * These types should NEVER include MCP-internal fields.
  */
 
