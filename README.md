@@ -1,6 +1,6 @@
 # Open Food Facts MCP Server
 
-Java implementation of the Open Food Facts MCP server. It exposes the same eight tools over MCP `2025-11-25` Streamable HTTP at `http://localhost:8081/mcp` and provides `GET /health`. The existing TypeScript implementation and its tests remain in `src/` and `tests/` as the JavaScript implementation.
+Java implementation of the Open Food Facts MCP server and FoodPulse simulator backend. The MCP server exposes eight tools over MCP `2025-11-25` Streamable HTTP at `http://localhost:8081/mcp` and provides `GET /health`. The React/TypeScript browser client is shared with the JavaScript version.
 
 ## Requirements
 
@@ -52,6 +52,4 @@ The simulator API is available at `http://localhost:3001`. The MCP service is av
 
 `get_product_by_barcode`, `search_products`, `get_nutrition_info`, `check_dietary_preferences`, `check_allergens`, `analyze_ingredients`, `compare_products`, and `find_alternatives`.
 
-The Java implementation is under `src/main/java/com/openfoodfacts/mcp`; JUnit tests are under `src/test/java`. The retained TypeScript implementation can still be run with `npm start` and its existing Vitest checks with `npm test`.
-
-The Java simulator backend is in `homepulse/simulator-java`. Its API remains compatible with the browser client. The original TypeScript MCP server and JavaScript simulator backend are retained in this checkout for comparison and are also available on the `integrated` branch.
+The Java MCP server is under `src/main/java/com/openfoodfacts/mcp`; its JUnit tests are under `src/test/java`. The Java simulator backend is in `homepulse/simulator-java` and keeps the existing API contract used by the browser client. The submitted JavaScript implementation remains on the GitHub `main` branch.
