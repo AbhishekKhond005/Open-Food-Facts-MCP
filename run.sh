@@ -11,8 +11,8 @@ BACKEND_URL="http://127.0.0.1:${BACKEND_PORT}"
 FRONTEND_URL="http://127.0.0.1:${FRONTEND_PORT}"
 declare -a STARTED_PIDS=()
 
-if ! command -v npm >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
-  echo "run.sh requires npm and curl." >&2
+if ! command -v npm >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! command -v java >/dev/null 2>&1 || ! command -v mvn >/dev/null 2>&1; then
+  echo "run.sh requires Node.js/npm, Java 21+, Maven, and curl." >&2
   exit 1
 fi
 
@@ -28,8 +28,6 @@ ensure_dependencies() {
   fi
 }
 
-ensure_dependencies "$ROOT_DIR" "node_modules/.bin/tsx"
-ensure_dependencies "$ROOT_DIR/homepulse/simulator-backend" "node_modules/express"
 ensure_dependencies "$ROOT_DIR/homepulse/client" "node_modules/.bin/vite"
 
 port_is_open() {
@@ -38,7 +36,7 @@ port_is_open() {
 }
 
 service_body() {
-  curl --noproxy '*' --silent --show-error --fail --max-time 2 "$1" 2>/dev/null || true
+  curl --noproxy '*' --silent --show-error --fail --max-time 10 "$1" 2>/dev/null || true
 }
 
 stop_started_services() {
@@ -101,8 +99,8 @@ export SIMULATOR_BACKEND_URL="http://127.0.0.1:${BACKEND_PORT}"
 export VITE_PORT="$FRONTEND_PORT"
 export VITE_SIMULATOR_API_URL=""
 
-start_service "MCP server" "$MCP_PORT" "$MCP_URL/health" '"status":"ok"' npm run dev
-start_service "Simulator backend" "$BACKEND_PORT" "$BACKEND_URL/api/v1/status" '"mcpServer":"connected"' npm --prefix homepulse/simulator-backend run dev
+start_service "MCP server" "$MCP_PORT" "$MCP_URL/health" '"status":"ok"' mvn -f "$ROOT_DIR/pom.xml" spring-boot:run
+start_service "Simulator backend" "$BACKEND_PORT" "$BACKEND_URL/api/v1/status" '"mcpServer":"connected"' mvn -f "$ROOT_DIR/homepulse/simulator-java/pom.xml" spring-boot:run
 start_service "Web frontend" "$FRONTEND_PORT" "$FRONTEND_URL/" 'id="root"' npm --prefix homepulse/client run dev -- --host 127.0.0.1 --strictPort
 
 echo

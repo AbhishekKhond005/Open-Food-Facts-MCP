@@ -12,9 +12,21 @@ services:
       - MCP_ENDPOINT_PATH=/mcp
       - LOG_LEVEL=info
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8081/health | grep -q 'status'" ]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 10s
+    restart: unless-stopped
+
+  simulator:
+    build: ./homepulse/simulator-java
+    ports:
+      - "3001:3001"
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8081/mcp
+      WEB_ORIGIN: http://localhost:5173
+    depends_on:
+      mcp-server:
+        condition: service_healthy
     restart: unless-stopped

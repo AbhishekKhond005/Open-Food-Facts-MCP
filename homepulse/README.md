@@ -5,7 +5,7 @@ FoodPulse is a browser chat interface and backend that demonstrate the Open Food
 ## Architecture
 
 ```text
-Browser (React/Vite :5173) → Simulator backend (Express :3001) → MCP server (:8081/mcp)
+Browser (React/Vite :5173) → Simulator backend (Java :3001) → MCP server (:8081/mcp)
 ```
 
 The browser calls only the simulator API. The simulator discovers tools from the MCP server and calls them over Streamable HTTP.
@@ -25,9 +25,7 @@ To start each service manually, use separate terminals:
 ### 1. MCP server
 
 ```bash
-npm install
-cp .env.example .env   # optional; defaults work locally
-npm start
+mvn spring-boot:run
 ```
 
 The MCP endpoint is `http://localhost:8081/mcp`.
@@ -35,10 +33,7 @@ The MCP endpoint is `http://localhost:8081/mcp`.
 ### 2. Simulator backend
 
 ```bash
-cd homepulse/simulator-backend
-cp .env.example .env   # defaults connect to the local MCP server
-npm install
-npm run dev
+mvn -f homepulse/simulator-java/pom.xml spring-boot:run
 ```
 
 The simulator API is at `http://localhost:3001`; its health endpoint is `/health` and MCP status is `/api/v1/status`.
@@ -64,7 +59,7 @@ The backend uses simple intent matching and requires a barcode for product-speci
 
 ## Configuration
 
-Set `MCP_SERVER_URL` in `homepulse/simulator-backend/.env` if the MCP server is not at `http://localhost:8081/mcp`. The committed `.env.example` files contain defaults only; keep actual local `.env` files untracked.
+Set the `MCP_SERVER_URL` environment variable if the MCP server is not at `http://localhost:8081/mcp`. The browser client still requires Node.js and npm.
 
 ## MCP API contract
 

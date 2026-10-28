@@ -1,0 +1,10 @@
+server:
+  port: ${SIMULATOR_PORT:${PORT:3001}}
+simulator:
+  web-origin: ${WEB_ORIGIN:http://localhost:5173}
+  mcp-url: ${MCP_SERVER_URL:http://localhost:8081/mcp}
+  protocol-version: ${MCP_PROTOCOL_VERSION:2025-11-25}
+  client-name: ${MCP_CLIENT_NAME:alexa-plus-simulator}
+  client-version: ${MCP_CLIENT_VERSION:0.1.0}
+  timeout-ms: ${MCP_REQUEST_TIMEOUT_MS:20000}
+  cache-ttl-ms: ${MCP_TOOL_CACHE_TTL_MS:60000}

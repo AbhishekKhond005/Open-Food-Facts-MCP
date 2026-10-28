@@ -24,9 +24,9 @@ check() {
   fi
 }
 
-# Helper: extract SSE data line from response
+# Accept either JSON or an SSE data event (both are valid Streamable HTTP responses).
 extract_data() {
-  grep "^data:" | sed 's/^data: //'
+  python3 -c 'import sys; s=sys.stdin.read().strip(); rows=[line[5:].strip() for line in s.splitlines() if line.startswith("data:")]; print(rows[0] if rows else s)'
 }
 
 echo "╔══════════════════════════════════════════════════════╗"

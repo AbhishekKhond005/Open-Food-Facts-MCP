@@ -1,0 +1,50 @@
+server:
+  address: ${MCP_SERVER_HOST:127.0.0.1}
+  port: ${MCP_SERVER_PORT:8081}
+  shutdown: graceful
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+        request-timeout: ${SERVER_REQUEST_TIMEOUT_MS:15000}ms
+        type: SYNC
+        name: open-food-facts-mcp
+        version: 1.0.0
+        instructions: >-
+          This MCP server provides food product information from Open Food Facts. It can look up products,
+          search, analyze nutrition, allergens, dietary suitability and ingredients, compare products,
+          and find alternatives. Data is community-contributed.
+        tool-change-notification: false
+        annotation-scanner:
+          enabled: false
+        resource-change-notification: false
+        prompt-change-notification: false
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
+        streamable-http:
+          mcp-endpoint: ${MCP_ENDPOINT_PATH:/mcp}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      enabled: false
+mcp:
+  endpoint-path: ${MCP_ENDPOINT_PATH:/mcp}
+  allowed-origins: ${MCP_ALLOWED_ORIGINS:}
+  max-request-body-bytes: ${MAX_REQUEST_BODY_BYTES:1048576}
+off:
+  api:
+    base-url: ${OFF_API_BASE_URL:https://world.openfoodfacts.org}
+    timeout-ms: ${OFF_API_TIMEOUT_MS:10000}
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
